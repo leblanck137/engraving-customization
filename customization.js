@@ -240,41 +240,44 @@ let selectedIndex = -1;
     smallCanvas.addEventListener('mousedown', handleMouseDown);
     smallCanvas.addEventListener('mousemove', handleMouseMove);
     smallCanvas.addEventListener('mouseup', handleMouseUp);
-    smallCanvas.addEventListener('touchstart', handleMouseDown);
-    smallCanvas.addEventListener('touchmove', handleMouseMove);
-    smallCanvas.addEventListener('touchend', handleMouseUp);
+    smallCanvas.addEventListener('touchstart', handleMouseDown, { passive: false });
+    smallCanvas.addEventListener('touchmove', handleMouseMove, { passive: false });
+    smallCanvas.addEventListener('touchend', handleMouseUp, { passive: false });
     
     secondSmallCanvas.addEventListener('mousedown', handleMouseDown);
     secondSmallCanvas.addEventListener('mousemove', handleMouseMove);
     secondSmallCanvas.addEventListener('mouseup', handleMouseUp);
-    secondSmallCanvas.addEventListener('touchstart', handleMouseDown);
-    secondSmallCanvas.addEventListener('touchmove', handleMouseMove);
-    secondSmallCanvas.addEventListener('touchend', handleMouseUp);
+    secondSmallCanvas.addEventListener('touchstart', handleMouseDown, { passive: false });
+    secondSmallCanvas.addEventListener('touchmove', handleMouseMove, { passive: false });
+    secondSmallCanvas.addEventListener('touchend', handleMouseUp, { passive: false });
 
     largeCanvas.addEventListener('mousedown', handleMouseDown);
     largeCanvas.addEventListener('mousemove', handleMouseMove);
     largeCanvas.addEventListener('mouseup', handleMouseUp);
-    largeCanvas.addEventListener('touchstart', handleMouseDown);
-    largeCanvas.addEventListener('touchmove', handleMouseMove);
-    largeCanvas.addEventListener('touchend', handleMouseUp);
+    largeCanvas.addEventListener('touchstart', handleMouseDown, { passive: false });
+    largeCanvas.addEventListener('touchmove', handleMouseMove, { passive: false });
+    largeCanvas.addEventListener('touchend', handleMouseUp, { passive: false });
     
     secondLargeCanvas.addEventListener('mousedown', handleMouseDown);
     secondLargeCanvas.addEventListener('mousemove', handleMouseMove);
     secondLargeCanvas.addEventListener('mouseup', handleMouseUp);
-    secondLargeCanvas.addEventListener('touchstart', handleMouseDown);
-    secondLargeCanvas.addEventListener('touchmove', handleMouseMove);
-    secondLargeCanvas.addEventListener('touchend', handleMouseUp);
+    secondLargeCanvas.addEventListener('touchstart', handleMouseDown, { passive: false });
+    secondLargeCanvas.addEventListener('touchmove', handleMouseMove, { passive: false });
+    secondLargeCanvas.addEventListener('touchend', handleMouseUp, { passive: false });
 
     smallCanvas.onclick = function() {
-    document.getElementById('lightbox').style.display = 'flex';
+        document.getElementById('lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     };
 
-	secondSmallCanvas.onclick = function() {
-    document.getElementById('lightbox').style.display = 'flex';
+    secondSmallCanvas.onclick = function() {
+        document.getElementById('lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     };
 
     document.getElementById('close-lightbox').onclick = function() {
         document.getElementById('lightbox').style.display = 'none';
+        document.body.style.overflow = '';
     };
 
     window.addEventListener('resize', function() {
@@ -1642,6 +1645,9 @@ function selectElement(element) {
 }
 
 function handleMouseDown(event) {
+    if (event.touches) {
+        event.preventDefault();
+    }
     const canvas = event.target;
     const rect = canvas.getBoundingClientRect();
     const clientX = event.touches ? event.touches[0].clientX : event.clientX;
@@ -1714,6 +1720,9 @@ function handleMouseDown(event) {
 function handleMouseMove(event) {
     if (!isDragging) return;
     if (event.target !== draggingCanvas) return; // <--- Only react if dragging on same canvas
+    if (event.touches) {
+        event.preventDefault();
+    }
 
     const canvas = event.target;
     const rect = canvas.getBoundingClientRect();
@@ -1743,6 +1752,9 @@ function handleMouseMove(event) {
 
 function handleMouseUp(event) {
     if (isDragging) {
+        if (event.changedTouches) {
+            event.preventDefault();
+        }
         var clientX = event.changedTouches ? event.changedTouches[0].clientX : event.clientX;
         var deltaX = (clientX - dragStartX) / draggingCanvas.width;
     
