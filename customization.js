@@ -13,6 +13,8 @@ var dragStartX = 0;
 var selectedType = null; // 'text' or 'image'
 var selectedIndex = -1;
 var draggingCanvas = null; // <--- new
+var aspectRatio1 = 1;
+var aspectRatio2 = 1;
 
 // Initialize the first element of the text arrays
 var text = [];
@@ -214,16 +216,16 @@ let selectedIndex = -1;
 
     // When the image finishes loading, draw it onto the canvases
     productImage.onload = function() {
-        var aspectRatio = productImage.height / productImage.width;
-        setCanvasDimensions(smallCanvas, largeCanvas, aspectRatio);
+        aspectRatio1 = productImage.height / productImage.width;
+        setCanvasDimensions(smallCanvas, largeCanvas, aspectRatio1);
         drawCanvas();
         updateRightmostObjectX(largeCanvas);
     };
 
     // When the new image finishes loading, draw it onto the second canvases
     secondProductImage.onload = function() {
-        var aspectRatio = secondProductImage.height / secondProductImage.width;
-        setCanvasDimensions(secondSmallCanvas, secondLargeCanvas, aspectRatio);
+        aspectRatio2 = secondProductImage.height / secondProductImage.width;
+        setCanvasDimensions(secondSmallCanvas, secondLargeCanvas, aspectRatio2);
         drawSecondCanvas(); // You should create this function to draw onto the second canvases
     };
 
@@ -238,18 +240,30 @@ let selectedIndex = -1;
     smallCanvas.addEventListener('mousedown', handleMouseDown);
     smallCanvas.addEventListener('mousemove', handleMouseMove);
     smallCanvas.addEventListener('mouseup', handleMouseUp);
+    smallCanvas.addEventListener('touchstart', handleMouseDown);
+    smallCanvas.addEventListener('touchmove', handleMouseMove);
+    smallCanvas.addEventListener('touchend', handleMouseUp);
     
     secondSmallCanvas.addEventListener('mousedown', handleMouseDown);
     secondSmallCanvas.addEventListener('mousemove', handleMouseMove);
     secondSmallCanvas.addEventListener('mouseup', handleMouseUp);
+    secondSmallCanvas.addEventListener('touchstart', handleMouseDown);
+    secondSmallCanvas.addEventListener('touchmove', handleMouseMove);
+    secondSmallCanvas.addEventListener('touchend', handleMouseUp);
 
     largeCanvas.addEventListener('mousedown', handleMouseDown);
     largeCanvas.addEventListener('mousemove', handleMouseMove);
     largeCanvas.addEventListener('mouseup', handleMouseUp);
+    largeCanvas.addEventListener('touchstart', handleMouseDown);
+    largeCanvas.addEventListener('touchmove', handleMouseMove);
+    largeCanvas.addEventListener('touchend', handleMouseUp);
     
     secondLargeCanvas.addEventListener('mousedown', handleMouseDown);
     secondLargeCanvas.addEventListener('mousemove', handleMouseMove);
-    secondLargeCanvas.addEventListener('mouseup', handleMouseUp);       
+    secondLargeCanvas.addEventListener('mouseup', handleMouseUp);
+    secondLargeCanvas.addEventListener('touchstart', handleMouseDown);
+    secondLargeCanvas.addEventListener('touchmove', handleMouseMove);
+    secondLargeCanvas.addEventListener('touchend', handleMouseUp);
 
     smallCanvas.onclick = function() {
     document.getElementById('lightbox').style.display = 'flex';
@@ -259,9 +273,16 @@ let selectedIndex = -1;
     document.getElementById('lightbox').style.display = 'flex';
     };
 
-	document.getElementById('close-lightbox').onclick = function() {
+    document.getElementById('close-lightbox').onclick = function() {
         document.getElementById('lightbox').style.display = 'none';
     };
+
+    window.addEventListener('resize', function() {
+        setCanvasDimensions(smallCanvas, largeCanvas, aspectRatio1);
+        setCanvasDimensions(secondSmallCanvas, secondLargeCanvas, aspectRatio2);
+        drawCanvas();
+        drawSecondCanvas();
+    });
 
 
 
@@ -1623,8 +1644,10 @@ function selectElement(element) {
 function handleMouseDown(event) {
     const canvas = event.target;
     const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+    const mouseX = clientX - rect.left;
+    const mouseY = clientY - rect.top;
 
     selectedType = null;
     selectedIndex = -1;
@@ -1694,7 +1717,8 @@ function handleMouseMove(event) {
 
     const canvas = event.target;
     const rect = canvas.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
+    const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+    const mouseX = clientX - rect.left;
     const dx = mouseX - dragStartX;
     dragStartX = mouseX;
 
@@ -1719,15 +1743,16 @@ function handleMouseMove(event) {
 
 function handleMouseUp(event) {
     if (isDragging) {
-        var deltaX = (event.clientX - dragStartX) / draggingCanvas.width;
+        var clientX = event.changedTouches ? event.changedTouches[0].clientX : event.clientX;
+        var deltaX = (clientX - dragStartX) / draggingCanvas.width;
     
         if (selectedType === 'text') {
             textX[selectedIndex] += deltaX;
-            dragStartX = event.clientX;
+            dragStartX = clientX;
             redrawCanvasAndMeasureText(selectedIndex);
         } else if (selectedType === 'image') {
             images[selectedIndex].x += deltaX;
-            dragStartX = event.clientX;
+            dragStartX = clientX;
             drawCanvas();
             drawSecondCanvas();
         }
