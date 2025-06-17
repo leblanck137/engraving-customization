@@ -90,6 +90,12 @@ var fontOffsets = {
     'Comic Sans MS': 0
 };
 
+function normalizeTouch(event) {
+    const t = (event.touches && event.touches[0]) ||
+              (event.changedTouches && event.changedTouches[0]);
+    return { clientX: t?.clientX || 0, clientY: t?.clientY || 0 };
+}
+
 
 // Function to measure the actual height of text
 function measureTextHeight(text, fontSize, font) {
@@ -238,18 +244,30 @@ let selectedIndex = -1;
     smallCanvas.addEventListener('mousedown', handleMouseDown);
     smallCanvas.addEventListener('mousemove', handleMouseMove);
     smallCanvas.addEventListener('mouseup', handleMouseUp);
+    smallCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    smallCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    smallCanvas.addEventListener('touchend', handleTouchEnd, { passive: false });
     
     secondSmallCanvas.addEventListener('mousedown', handleMouseDown);
     secondSmallCanvas.addEventListener('mousemove', handleMouseMove);
     secondSmallCanvas.addEventListener('mouseup', handleMouseUp);
+    secondSmallCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    secondSmallCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    secondSmallCanvas.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     largeCanvas.addEventListener('mousedown', handleMouseDown);
     largeCanvas.addEventListener('mousemove', handleMouseMove);
     largeCanvas.addEventListener('mouseup', handleMouseUp);
+    largeCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    largeCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    largeCanvas.addEventListener('touchend', handleTouchEnd, { passive: false });
     
     secondLargeCanvas.addEventListener('mousedown', handleMouseDown);
     secondLargeCanvas.addEventListener('mousemove', handleMouseMove);
-    secondLargeCanvas.addEventListener('mouseup', handleMouseUp);       
+    secondLargeCanvas.addEventListener('mouseup', handleMouseUp);
+    secondLargeCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    secondLargeCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    secondLargeCanvas.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     smallCanvas.onclick = function() {
     document.getElementById('lightbox').style.display = 'flex';
@@ -1689,6 +1707,9 @@ function handleMouseDown(event) {
 }
 
 function handleMouseMove(event) {
+    console.log("handleMouseMove fired");
+    console.log("isDragging:", isDragging);
+    console.log("selectedObject:", selectedObject);
     if (!isDragging) return;
     if (event.target !== draggingCanvas) return; // <--- Only react if dragging on same canvas
 
@@ -1735,6 +1756,34 @@ function handleMouseUp(event) {
         
     isDragging = false;
     draggingCanvas = null;
+}
+
+function handleTouchStart(event) {
+    event.preventDefault();
+    console.log("Touch event triggered: touchstart");
+    const { clientX, clientY } = normalizeTouch(event);
+    event.clientX = clientX;
+    event.clientY = clientY;
+    handleMouseDown(event);
+}
+
+function handleTouchMove(event) {
+    event.preventDefault();
+    console.log("Touch event triggered: touchmove");
+    const { clientX, clientY } = normalizeTouch(event);
+    event.clientX = clientX;
+    event.clientY = clientY;
+    event.buttons = 1;
+    handleMouseMove(event);
+}
+
+function handleTouchEnd(event) {
+    event.preventDefault();
+    console.log("Touch event triggered: touchend");
+    const { clientX, clientY } = normalizeTouch(event);
+    event.clientX = clientX;
+    event.clientY = clientY;
+    handleMouseUp(event);
 }
 
 
