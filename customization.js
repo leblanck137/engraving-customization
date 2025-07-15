@@ -1709,7 +1709,6 @@ function handleMouseDown(event) {
 function handleMouseMove(event) {
     console.log("handleMouseMove fired");
     console.log("isDragging:", isDragging);
-    console.log("selectedObject:", selectedObject);
     if (!isDragging) return;
     if (event.target !== draggingCanvas) return; // <--- Only react if dragging on same canvas
 
