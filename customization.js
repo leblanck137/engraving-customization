@@ -1739,15 +1739,9 @@ function handleMouseMove(event) {
 
 function handleMouseUp(event) {
     if (isDragging) {
-        var deltaX = (event.clientX - dragStartX) / draggingCanvas.width;
-    
         if (selectedType === 'text') {
-            textX[selectedIndex] += deltaX;
-            dragStartX = event.clientX;
             redrawCanvasAndMeasureText(selectedIndex);
         } else if (selectedType === 'image') {
-            images[selectedIndex].x += deltaX;
-            dragStartX = event.clientX;
             drawCanvas();
             drawSecondCanvas();
         }
