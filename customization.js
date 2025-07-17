@@ -1957,8 +1957,21 @@ function handleClickOnCanvas(event) {
 }
 
 // Ensure the event listeners are correctly attached
-canvas.addEventListener('click', handleClickOnCanvas);
-secondLargeCanvas.addEventListener('click', handleClickOnCanvas);
+  canvas.addEventListener('click', handleClickOnCanvas);
+  secondLargeCanvas.addEventListener('click', handleClickOnCanvas);
+
+  // Prevent click handlers from firing immediately after a drag
+  document.addEventListener(
+    'click',
+    function (e) {
+      if (didDrag) {
+        didDrag = false;
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    },
+    true
+  );
 
 
 
