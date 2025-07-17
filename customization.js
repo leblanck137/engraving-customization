@@ -1674,6 +1674,8 @@ function handleMouseDown(event) {
             selectedIndex = i;
             dragStartX = mouseX;
             draggingCanvas = canvas; // <--- Lock to this canvas
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
             return;
         }
     }
@@ -1701,6 +1703,8 @@ function handleMouseDown(event) {
             selectedIndex = i;
             dragStartX = mouseX;
             draggingCanvas = canvas; // <--- Lock to this canvas
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
             return;
         }
     }
@@ -1709,11 +1713,9 @@ function handleMouseDown(event) {
 function handleMouseMove(event) {
     console.log("handleMouseMove fired");
     console.log("isDragging:", isDragging);
-    console.log("selectedObject:", selectedObject);
     if (!isDragging) return;
-    if (event.target !== draggingCanvas) return; // <--- Only react if dragging on same canvas
 
-    const canvas = event.target;
+    const canvas = draggingCanvas;
     const rect = canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const dx = mouseX - dragStartX;
@@ -1740,22 +1742,24 @@ function handleMouseMove(event) {
 
 function handleMouseUp(event) {
     if (isDragging) {
-        var deltaX = (event.clientX - dragStartX) / draggingCanvas.width;
-    
+        const rect = draggingCanvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const deltaX = mouseX - dragStartX;
+
         if (selectedType === 'text') {
-            textX[selectedIndex] += deltaX;
-            dragStartX = event.clientX;
+            textX[selectedIndex] += deltaX / draggingCanvas.width;
             redrawCanvasAndMeasureText(selectedIndex);
         } else if (selectedType === 'image') {
-            images[selectedIndex].x += deltaX;
-            dragStartX = event.clientX;
+            images[selectedIndex].x += deltaX / draggingCanvas.width;
             drawCanvas();
             drawSecondCanvas();
         }
     }
-        
+
     isDragging = false;
     draggingCanvas = null;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
 }
 
 function handleTouchStart(event) {
