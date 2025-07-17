@@ -1830,7 +1830,7 @@ function deselectAllElements() {
 document.addEventListener('click', function(e) {
 console.log("deselect click");
   // List of IDs or classes that should not trigger deselection
-  var excludeList = ['#canvas-container', '#second-canvas-container', '#controls-container', '#image-fields-container', '#text-fields-container', '.lightbox-btn'];
+  var excludeList = ['#canvas-container', '#second-canvas-container', '#lightbox-canvas', '#second-lightbox-canvas', '#controls-container', '#image-fields-container', '#text-fields-container', '.lightbox-btn'];
 
   // Check if the clicked target is outside the excluded elements
   var isOutside = excludeList.every(function(selector) {
