@@ -1718,7 +1718,10 @@ function handleMouseDown(event) {
 }
 
 function handleMouseMove(event) {
-    if (!isMouseDown && !isDragging) return;
+  if (!isMouseDown && !isDragging) return;
+
+  console.log("handleMouseMove fired");
+  console.log("isDragging:", isDragging);
 
     const canvas = draggingCanvas;
     const rect = canvas.getBoundingClientRect();
@@ -1756,9 +1759,21 @@ function handleMouseMove(event) {
 function handleMouseUp(event) {
     isMouseDown = false;
     if (isDragging) {
-        isDragging = false;
-        didDrag = true; // mark that a drag occurred so the upcoming click is ignored
-    }
+  const rect = draggingCanvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const deltaX = mouseX - dragStartX;
+
+  if (selectedType === 'text') {
+    textX[selectedIndex] += deltaX / draggingCanvas.width;
+    redrawCanvasAndMeasureText(selectedIndex);
+  } else if (selectedType === 'image') {
+    images[selectedIndex].x += deltaX / draggingCanvas.width;
+    drawCanvas();
+    drawSecondCanvas();
+  }
+
+  isDragging = false;
+  didDrag = true; // mark that a drag occurred so the upcoming click is ignored
     draggingCanvas = null;
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
