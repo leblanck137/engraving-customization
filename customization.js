@@ -168,9 +168,12 @@ window.onload = function() {
 
 // Dragging state variables
 let isDragging = false;
+let isMouseDown = false;
 let dragStartX = 0;
 let selectedType = null; // 'text' or 'image'
 let selectedIndex = -1;
+let didDrag = false;
+const dragThreshold = 5; // pixels before a drag is recognized
 
     // Get a reference to the small canvas and its 2D rendering context
     var smallCanvas = document.getElementById('product-preview');
@@ -1646,6 +1649,8 @@ function handleMouseDown(event) {
 
     selectedType = null;
     selectedIndex = -1;
+    isMouseDown = false;
+    didDrag = false;
 
     // Check if clicked on text
     for (let i = 0; i < text.length; i++) {
@@ -1669,7 +1674,8 @@ function handleMouseDown(event) {
             mouseY >= y &&
             mouseY <= y + height
         ) {
-            isDragging = true;
+            isMouseDown = true;
+            isDragging = false;
             selectedType = 'text';
             selectedIndex = i;
             dragStartX = mouseX;
@@ -1698,7 +1704,8 @@ function handleMouseDown(event) {
             mouseY >= imgY &&
             mouseY <= imgY + imgHeight
         ) {
-            isDragging = true;
+            isMouseDown = true;
+            isDragging = false;
             selectedType = 'image';
             selectedIndex = i;
             dragStartX = mouseX;
@@ -1711,14 +1718,20 @@ function handleMouseDown(event) {
 }
 
 function handleMouseMove(event) {
-    console.log("handleMouseMove fired");
-    console.log("isDragging:", isDragging);
-    if (!isDragging) return;
+    if (!isMouseDown && !isDragging) return;
 
     const canvas = draggingCanvas;
     const rect = canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const dx = mouseX - dragStartX;
+
+    if (!isDragging) {
+        if (Math.abs(dx) < dragThreshold) return;
+        isDragging = true;
+        didDrag = true;
+        deselectAllElements();
+    }
+
     dragStartX = mouseX;
 
     if (selectedType === 'text' && selectedIndex !== -1) {
@@ -1741,22 +1754,10 @@ function handleMouseMove(event) {
 }
 
 function handleMouseUp(event) {
+    isMouseDown = false;
     if (isDragging) {
-        const rect = draggingCanvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const deltaX = mouseX - dragStartX;
-
-        if (selectedType === 'text') {
-            textX[selectedIndex] += deltaX / draggingCanvas.width;
-            redrawCanvasAndMeasureText(selectedIndex);
-        } else if (selectedType === 'image') {
-            images[selectedIndex].x += deltaX / draggingCanvas.width;
-            drawCanvas();
-            drawSecondCanvas();
-        }
+        isDragging = false;
     }
-
-    isDragging = false;
     draggingCanvas = null;
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
@@ -1856,6 +1857,11 @@ let clickedObjects = [];
 
 // Modify the handleClickOnCanvas function as follows
 function handleClickOnCanvas(event) {
+  if (didDrag) {
+    // If a drag just occurred, ignore this click
+    didDrag = false;
+    return;
+  }
   event.stopPropagation(); // Stop the event from propagating up to the document
 
   // Reset clickedObjects array and lastShownIndex
