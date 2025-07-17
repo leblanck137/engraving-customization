@@ -244,6 +244,31 @@ const dragThreshold = 5; // pixels before a drag is recognized
     let currentTextNum = 0;
     let currentImageNum = 0;
 
+    function handleTouchStart(event) {
+        event.preventDefault();
+        const { clientX, clientY } = normalizeTouch(event);
+        event.clientX = clientX;
+        event.clientY = clientY;
+        handleMouseDown(event);
+    }
+
+    function handleTouchMove(event) {
+        event.preventDefault();
+        const { clientX, clientY } = normalizeTouch(event);
+        event.clientX = clientX;
+        event.clientY = clientY;
+        event.buttons = 1;
+        handleMouseMove(event);
+    }
+
+    function handleTouchEnd(event) {
+        event.preventDefault();
+        const { clientX, clientY } = normalizeTouch(event);
+        event.clientX = clientX;
+        event.clientY = clientY;
+        handleMouseUp(event);
+    }
+
     smallCanvas.addEventListener('mousedown', handleMouseDown);
     smallCanvas.addEventListener('mousemove', handleMouseMove);
     smallCanvas.addEventListener('mouseup', handleMouseUp);
@@ -1779,33 +1804,6 @@ function handleMouseUp(event) {
     document.removeEventListener('mouseup', handleMouseUp);
 }
 
-function handleTouchStart(event) {
-    event.preventDefault();
-    console.log("Touch event triggered: touchstart");
-    const { clientX, clientY } = normalizeTouch(event);
-    event.clientX = clientX;
-    event.clientY = clientY;
-    handleMouseDown(event);
-}
-
-function handleTouchMove(event) {
-    event.preventDefault();
-    console.log("Touch event triggered: touchmove");
-    const { clientX, clientY } = normalizeTouch(event);
-    event.clientX = clientX;
-    event.clientY = clientY;
-    event.buttons = 1;
-    handleMouseMove(event);
-}
-
-function handleTouchEnd(event) {
-    event.preventDefault();
-    console.log("Touch event triggered: touchend");
-    const { clientX, clientY } = normalizeTouch(event);
-    event.clientX = clientX;
-    event.clientY = clientY;
-    handleMouseUp(event);
-}
 
 
 function deselectAllElements() {
