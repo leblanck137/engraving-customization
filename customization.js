@@ -458,12 +458,6 @@ newTextContainer.innerHTML = `
     
 `;
 
-
-    // Attach event listener to show/hide controls when the text object is selected/deselected
-    newTextContainer.addEventListener('click', function () {
-        toggleControls('text', thisTextNum);
-    });
-
     // Add the new elements to the DOM
     var textFieldsContainer = document.getElementById('text-fields-container');
     textFieldsContainer.appendChild(newTextContainer);
@@ -550,12 +544,6 @@ newImageContainer.innerHTML = `
 
           // Attach event listeners for the new image field
           attachImageEventListeners(thisImageNum, newImageContainer);
-          
-              // Attach event listener to show/hide controls when the image object is selected/deselected
-    newImageContainer.addEventListener('click', function () {
-        toggleControls('image', thisImageNum);
-    });
-
           // Draw the canvases
           drawCanvas();
           drawSecondCanvas();
@@ -1611,18 +1599,23 @@ function createTextControls(textNum) {
 }
 
 function toggleControls(type, index) {
-    // Hide all controls
-    deselectAllElements();
-
-    // Show controls for the selected object
     var selectedContainer = document.getElementById(type + index + '-container');
+    if (!selectedContainer) {
+        return;
+    }
+
     selectedContainer.style.display = 'flex';
 
-    // Set the selected indices based on the type
     if (type === 'text') {
-        selectedTextIndex = index;
+        var textArrayIndex = textFieldNumbers.indexOf(index);
+        selectedTextIndex = textArrayIndex;
+        selectedImageIndex = -1;
     } else if (type === 'image') {
-        selectedImageIndex = index;
+        var imageArrayIndex = images.findIndex(function(image) {
+            return image.id === 'image' + index;
+        });
+        selectedImageIndex = imageArrayIndex;
+        selectedTextIndex = -1;
     }
 }
 
@@ -1781,29 +1774,59 @@ function handleMouseMove(event) {
 }
 
 function handleMouseUp(event) {
+    if (!isMouseDown && !isDragging) {
+        return;
+    }
+
     isMouseDown = false;
-    if (isDragging) {
+
+    if (!draggingCanvas) {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        selectedType = null;
+        selectedIndex = -1;
+        return;
+    }
+
     const rect = draggingCanvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const deltaX = mouseX - dragStartX;
 
-    if (selectedType === 'text') {
-        textX[selectedIndex] += deltaX / draggingCanvas.width;
-        redrawCanvasAndMeasureText(selectedIndex);
-    } else if (selectedType === 'image') {
-        images[selectedIndex].x += deltaX / draggingCanvas.width;
-        drawCanvas();
-        drawSecondCanvas();
+    if (isDragging) {
+        if (selectedType === 'text' && selectedIndex !== -1) {
+            textX[selectedIndex] += deltaX / draggingCanvas.width;
+            redrawCanvasAndMeasureText(selectedIndex);
+        } else if (selectedType === 'image' && selectedIndex !== -1) {
+            images[selectedIndex].x += deltaX / draggingCanvas.width;
+            drawCanvas();
+            drawSecondCanvas();
+        }
+
+        didDrag = true; // mark that a drag occurred so the upcoming click is ignored
+    } else if (selectedType === 'text' && selectedIndex !== -1) {
+        var selectedTextNum = textFieldNumbers[selectedIndex];
+        var textContainer = document.getElementById('text' + selectedTextNum + '-container');
+        if (textContainer) {
+            selectElement(textContainer);
+        }
+    } else if (selectedType === 'image' && selectedIndex !== -1) {
+        var imageId = images[selectedIndex]?.id;
+        if (imageId) {
+            var imageContainer = document.getElementById(imageId + '-container');
+            if (imageContainer) {
+                selectElement(imageContainer);
+            }
+        }
     }
 
     isDragging = false;
-    didDrag = true; // mark that a drag occurred so the upcoming click is ignored
-
     draggingCanvas = null;
+    selectedType = null;
+    selectedIndex = -1;
+
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
 }
-
 
 
 function deselectAllElements() {
@@ -2018,5 +2041,4 @@ addImageButton.onclick = function() {
 
 
 
-};
 };
